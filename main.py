@@ -19,10 +19,13 @@ def load_model_objects():
         vectorizer = joblib.load("vectorizer_tfidf.pkl")
         tools = joblib.load("preprocessing_tools.pkl")
         return model_bnb, model_svm, model_ensemble, vectorizer, tools
-    except:
+    except Exception as e:
+        st.error(f"❌ Gagal memuat model: {e}")
         return None, None, None, None, None
 
+
 model_bnb, model_svm, model_ensemble, vectorizer, tools = load_model_objects()
+
 
 # Preprocessing teks
 def preprocess_text(text, stopword_remover, stemmer):
@@ -32,6 +35,7 @@ def preprocess_text(text, stopword_remover, stemmer):
     text = stemmer.stem(text)
     return text
 
+
 # Confidence label
 def get_confidence_badge(prob):
     if prob > 80:
@@ -40,6 +44,7 @@ def get_confidence_badge(prob):
         return "🟡 Sedang", "warning"
     else:
         return "🔴 Rendah", "error"
+
 
 # UI Utama
 st.title("🎬 Analisis Sentimen Film")
@@ -86,6 +91,7 @@ else:
                 try:
                     stopword_remover = tools['stopword']
                     stemmer = tools['stemmer']
+
                     processed = preprocess_text(input_text, stopword_remover, stemmer)
                     vec = vectorizer.transform([processed])
 
@@ -114,3 +120,8 @@ else:
                     col1, col2 = st.columns(2)
                     with col1:
                         st.metric("Negatif", f"{prob_ensemble[0]*100:.1f}%")
+                    with col2:
+                        st.metric("Positif", f"{prob_ensemble[1]*100:.1f}%")
+
+                except Exception as e:
+                    st.error(f"❌ Terjadi error saat prediksi: {e}")
